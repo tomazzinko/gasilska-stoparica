@@ -5,7 +5,7 @@ let attempts = [];
 
 // Load the countdown audio
 const countdownAudio = new Audio('enota_pripravi_se.m4a');
-let isFirstStart = true;
+let isFirstStart = false;
 
 // Preload the audio
 countdownAudio.preload = 'auto';
@@ -126,20 +126,29 @@ function playCountdownAndStart() {
     if (playPromise !== undefined) {
         playPromise.catch(error => {
             console.error('Playback failed:', error);
-            document.getElementById('status').textContent = 'Click anywhere to start';
+            document.getElementById('status').textContent = 'Klikni kjerkoli na strani za začetek/konec ali uporabi tipko presledek';
             isFirstStart = true; // Reset to try again
         });
     }
 }
 
-// Keyboard controls
-document.addEventListener('keydown', (event) => {
-    if (event.code === 'Backspace' && !isRunning) {
-        event.preventDefault(); // Prevent browser back navigation
-        startCountdown();
-    } else if (event.code === 'Space' && isRunning) {
-        event.preventDefault(); // Prevent page scroll
+// Update keyboard and mouse controls
+document.addEventListener('click', (event) => {
+    if (isRunning) {
         stopTimer();
+    } else {
+        startCountdown();
+    }
+});
+
+document.addEventListener('keydown', (event) => {
+    if (event.code === 'Space') {
+        event.preventDefault(); // Prevent page scroll
+        if (isRunning) {
+            stopTimer();
+        } else {
+            startCountdown();
+        }
     }
 });
 

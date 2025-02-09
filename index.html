@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Firefighter Training Stopwatch</title>
+    <title>Gasilski Časovnik za vadbo</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -32,7 +32,7 @@
             font-size: 120px;
             font-weight: bold;
             text-align: center;
-            margin: 50px 0;
+            margin: 100px 0 50px 0;
             font-family: monospace;
         }
 
@@ -54,29 +54,27 @@
             font-size: 18px;
         }
 
-        .instructions {
+        .controls-hint {
             text-align: center;
-            margin: 20px 0;
-            padding: 20px;
-            background-color: #fff;
-            border-radius: 10px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            font-size: 14px;
+            color: #999;
+            margin-top: 30px;
         }
     </style>
 </head>
 
 <body>
     <div class="main-container">
-        <div class="instructions">
-            <h2>Controls</h2>
-            <p>Press <strong>Backspace</strong> to start countdown</p>
-            <p>Press <strong>Space</strong> to stop timer</p>
-        </div>
         <div id="stopwatch">00:00.000</div>
         <div class="status" id="status">Ready</div>
+        <div class="controls-hint">
+            Klikni z miško kjerkoli na strani za začetek/konec ali uporabi tipko presledek
+            <br>
+            Ne deluje v Firefoxu ¯\_(ツ)_/¯
+        </div>
     </div>
     <div class="attempts-container">
-        <h2>Previous Attempts</h2>
+        <h2>Prejšnji poskusi</h2>
         <ul id="attempts"></ul>
     </div>
 
