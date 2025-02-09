@@ -95,14 +95,19 @@
 </head>
 
 <body>
+    <audio id="countdown" preload="auto">
+        <source src="enota_pripravi_se.ogg" type="audio/ogg">
+        <source src="enota_pripravi_se.mp3" type="audio/mpeg">
+        <source src="enota_pripravi_se.m4a" type="audio/mp4">
+        <source src="enota_pripravi_se.wav" type="audio/wav">
+        Your browser does not support the audio element.
+    </audio>
     <div class="container-wrapper">
         <div class="main-container">
             <div id="stopwatch">00:00.000</div>
             <div class="status" id="status">Ready</div>
             <div class="controls-hint">
                 Klikni z miško kjerkoli na strani za začetek/konec ali uporabi tipko presledek
-                <br>
-                Ne deluje v Firefoxu ¯\_(ツ)_/¯
                 <br>
                 <a class="github-link"
                     href="https://github.com/tomazzinko/gasilska-stoparica">tomazzinko/gasilska-stoparica</a>

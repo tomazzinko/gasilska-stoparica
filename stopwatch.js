@@ -3,12 +3,9 @@ let timerInterval;
 let isRunning = false;
 let attempts = [];
 
-// Load the countdown audio
-const countdownAudio = new Audio('enota_pripravi_se.m4a');
+// Get the audio element
+const countdownAudio = document.getElementById('countdown');
 let isFirstStart = false;
-
-// Preload the audio
-countdownAudio.preload = 'auto';
 
 // Set up the audio end handler once
 countdownAudio.addEventListener('ended', () => {
