@@ -89,29 +89,30 @@ function updateAttemptsList() {
 function startCountdown() {
     if (isRunning) return;
 
-    // If this is the first start, we'll need user interaction
-    if (isFirstStart) {
-        document.getElementById('status').textContent = 'Click anywhere to start';
+    // Always require first interaction on mobile
+    if (isFirstStart || /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+        document.getElementById('status').textContent = 'Klikni tukaj za začetek';
 
         const startOnClick = () => {
             document.removeEventListener('click', startOnClick);
             isFirstStart = false;
-            playCountdownAndStart();
+            // Try to unlock audio on mobile
+            countdownAudio.play().then(() => {
+                countdownAudio.pause();
+                countdownAudio.currentTime = 0;
+                playCountdownAndStart();
+            }).catch(() => {
+                // If play fails, try anyway
+                playCountdownAndStart();
+            });
         };
 
         document.addEventListener('click', startOnClick);
         return;
     }
 
-    // Ensure audio is ready before playing
-    if (countdownAudio.readyState >= 2) {
-        playCountdownAndStart();
-    } else {
-        document.getElementById('status').textContent = 'Loading audio...';
-        countdownAudio.addEventListener('canplay', () => {
-            playCountdownAndStart();
-        }, { once: true });
-    }
+    // For desktop, try playing directly
+    playCountdownAndStart();
 }
 
 function playCountdownAndStart() {
@@ -123,7 +124,11 @@ function playCountdownAndStart() {
     if (playPromise !== undefined) {
         playPromise.catch(error => {
             console.error('Playback failed:', error);
-            document.getElementById('status').textContent = 'Klikni kjerkoli na strani za začetek/konec ali uporabi tipko presledek';
+            // Show clearer message on mobile
+            const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+            document.getElementById('status').textContent = isMobile ?
+                'Klikni tukaj za začetek' :
+                'Klikni kjerkoli na strani za začetek/konec ali uporabi tipko presledek';
             isFirstStart = true; // Reset to try again
         });
     }
