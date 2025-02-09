@@ -8,32 +8,59 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            display: flex;
             margin: 0;
             padding: 20px;
             background-color: #f0f0f0;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container-wrapper {
+            display: flex;
+            max-width: 1200px;
+            width: 100%;
+            gap: 20px;
         }
 
         .main-container {
-            flex: 2;
+            flex: 0 1 auto;
             padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
 
         .attempts-container {
-            flex: 1;
+            flex: 0 1 300px;
             padding: 20px;
             background-color: white;
             border-radius: 10px;
-            margin-left: 20px;
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        @media (max-width: 900px) {
+            .container-wrapper {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .attempts-container {
+                margin-top: 20px;
+            }
+
+            #stopwatch {
+                font-size: min(80px, 11vw) !important;
+                margin: 20px 0 20px 0 !important;
+            }
         }
 
         #stopwatch {
             font-size: 120px;
             font-weight: bold;
             text-align: center;
-            margin: 100px 0 50px 0;
+            margin: 40px 0 30px 0;
             font-family: monospace;
+            white-space: nowrap;
         }
 
         .status {
@@ -60,22 +87,31 @@
             color: #999;
             margin-top: 30px;
         }
+
+        .github-link {
+            color: #999;
+        }
     </style>
 </head>
 
 <body>
-    <div class="main-container">
-        <div id="stopwatch">00:00.000</div>
-        <div class="status" id="status">Ready</div>
-        <div class="controls-hint">
-            Klikni z miško kjerkoli na strani za začetek/konec ali uporabi tipko presledek
-            <br>
-            Ne deluje v Firefoxu ¯\_(ツ)_/¯
+    <div class="container-wrapper">
+        <div class="main-container">
+            <div id="stopwatch">00:00.000</div>
+            <div class="status" id="status">Ready</div>
+            <div class="controls-hint">
+                Klikni z miško kjerkoli na strani za začetek/konec ali uporabi tipko presledek
+                <br>
+                Ne deluje v Firefoxu ¯\_(ツ)_/¯
+                <br>
+                <a class="github-link"
+                    href="https://github.com/tomazzinko/gasilska-stoparica">tomazzinko/gasilska-stoparica</a>
+            </div>
         </div>
-    </div>
-    <div class="attempts-container">
-        <h2>Prejšnji poskusi</h2>
-        <ul id="attempts"></ul>
+        <div class="attempts-container">
+            <h2>Prejšnji poskusi</h2>
+            <ul id="attempts"></ul>
+        </div>
     </div>
 
     <script src="stopwatch.js"></script>
