@@ -23,6 +23,7 @@ let roundEndTimer = null;
 let roundEndTimeLeft = 10;
 const hornAudio = document.getElementById('horn');
 let startDelay = 10; // Default 3 second delay
+let isCountingDown = false;
 
 function formatTime(ms) {
     const minutes = Math.floor(ms / 60000);
@@ -42,6 +43,7 @@ function startTimer() {
     startTime = Date.now();
     timerInterval = setInterval(updateDisplay, 10);
     isRunning = true;
+    isCountingDown = false; // Reset countdown flag when timer starts
     document.getElementById('status').textContent = 'Running';
     document.getElementById('stopwatch').style.color = '#4CAF50'; // Green when running
 }
@@ -123,7 +125,7 @@ function adjustDelay(change) {
 }
 
 function startCountdown() {
-    if (isRunning) return;
+    if (isRunning || isCountingDown) return; // Don't start if already running or counting down
 
     // Reset round end timer if it's running
     if (roundEndTimer) {
@@ -163,6 +165,7 @@ function startCountdown() {
 }
 
 function playCountdownAndStart() {
+    isCountingDown = true;
     document.getElementById('status').textContent = 'Čakam...';
     document.getElementById('stopwatch').style.color = '#FFA500'; // Yellow during waiting period
 
@@ -182,6 +185,7 @@ function playCountdownAndStart() {
                     'Klikni tukaj za začetek' :
                     'Klikni kjerkoli na strani za začetek/konec ali uporabi tipko presledek';
                 isFirstStart = true; // Reset to try again
+                isCountingDown = false; // Reset countdown flag on error
             });
         }
     }, startDelay * 1000);
