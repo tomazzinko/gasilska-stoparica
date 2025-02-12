@@ -164,7 +164,12 @@
         </div>
     </div>
 
-    <script src="stopwatch.js"></script>
+    <script>
+        // Add timestamp to force script reload
+        const scriptElement = document.createElement('script');
+        scriptElement.src = `stopwatch.js?v=${Date.now()}`;
+        document.body.appendChild(scriptElement);
+    </script>
 </body>
 
 </html>
