@@ -22,6 +22,7 @@ const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw4GAkct4RODU
 let roundEndTimer = null;
 let roundEndTimeLeft = 10;
 const hornAudio = document.getElementById('horn');
+let startDelay = 10; // Default 3 second delay
 
 function formatTime(ms) {
     const minutes = Math.floor(ms / 60000);
@@ -112,6 +113,11 @@ function updateAttemptsList() {
         .join('');
 }
 
+function adjustDelay(change) {
+    startDelay = Math.max(0, Math.max(0, startDelay + change));
+    document.getElementById('delayDisplay').textContent = startDelay;
+}
+
 function startCountdown() {
     if (isRunning) return;
 
@@ -150,26 +156,36 @@ function startCountdown() {
 }
 
 function playCountdownAndStart() {
-    document.getElementById('status').textContent = 'Pripravi se...';
-    countdownAudio.currentTime = 0;
+    document.getElementById('status').textContent = 'Čakam...';
 
-    const playPromise = countdownAudio.play();
+    // First wait for the configured delay
+    setTimeout(() => {
+        document.getElementById('status').textContent = 'Pripravi se...';
+        countdownAudio.currentTime = 0;
 
-    if (playPromise !== undefined) {
-        playPromise.catch(error => {
-            console.error('Playback failed:', error);
-            // Show clearer message on mobile
-            const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-            document.getElementById('status').textContent = isMobile ?
-                'Klikni tukaj za začetek' :
-                'Klikni kjerkoli na strani za začetek/konec ali uporabi tipko presledek';
-            isFirstStart = true; // Reset to try again
-        });
-    }
+        const playPromise = countdownAudio.play();
+
+        if (playPromise !== undefined) {
+            playPromise.catch(error => {
+                console.error('Playback failed:', error);
+                // Show clearer message on mobile
+                const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+                document.getElementById('status').textContent = isMobile ?
+                    'Klikni tukaj za začetek' :
+                    'Klikni kjerkoli na strani za začetek/konec ali uporabi tipko presledek';
+                isFirstStart = true; // Reset to try again
+            });
+        }
+    }, startDelay * 1000);
 }
 
-// Update keyboard and mouse controls
+// Replace the click event listener with this updated version
 document.addEventListener('click', (event) => {
+    // Ignore clicks on buttons, links, and their children
+    if (event.target.closest('button') || event.target.closest('a')) {
+        return;
+    }
+
     if (isRunning) {
         stopTimer();
     } else {
