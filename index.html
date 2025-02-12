@@ -63,6 +63,14 @@
             white-space: nowrap;
         }
 
+        #round-end-countdown {
+            font-size: 80px;
+            font-weight: bold;
+            text-align: center;
+            margin: 40px 0 30px 0;
+            font-family: monospace;
+        }
+
         .status {
             text-align: center;
             font-size: 24px;
@@ -102,6 +110,13 @@
         <source src="enota_pripravi_se.wav" type="audio/wav">
         Your browser does not support the audio element.
     </audio>
+    <audio id="horn" preload="auto">
+        <source src="horn.ogg" type="audio/ogg">
+        <source src="horn.mp3" type="audio/mpeg">
+        <source src="horn.m4a" type="audio/mp4">
+        <source src="horn.wav" type="audio/wav">
+        Your browser does not support the audio element.
+    </audio>
     <div class="container-wrapper">
         <div class="main-container">
             <div id="stopwatch">00:00.000</div>
@@ -112,6 +127,7 @@
                 <a class="github-link"
                     href="https://github.com/tomazzinko/gasilska-stoparica">tomazzinko/gasilska-stoparica</a>
             </div>
+            <div id="round-end-countdown">10:00</div>
         </div>
         <div class="attempts-container">
             <h2>Prejšnji poskusi</h2>

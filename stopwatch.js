@@ -18,6 +18,11 @@ countdownAudio.addEventListener('ended', () => {
 // Add at the top with other variables
 const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw4GAkct4RODUcammqmTvRcGMglzS8QxZjkA4kZg3gdzgGjYKA8EYU27X7rgZe5kqvH/exec'; // Put your web app URL here
 
+// Add these variables at the top with other declarations
+let roundEndTimer = null;
+let roundEndTimeLeft = 10;
+const hornAudio = document.getElementById('horn');
+
 function formatTime(ms) {
     const minutes = Math.floor(ms / 60000);
     const seconds = Math.floor((ms % 60000) / 1000);
@@ -37,6 +42,19 @@ function startTimer() {
     timerInterval = setInterval(updateDisplay, 10);
     isRunning = true;
     document.getElementById('status').textContent = 'Running';
+}
+
+function updateRoundEndTimer() {
+    roundEndTimeLeft = Math.max(0, roundEndTimeLeft - 0.01);
+    const seconds = Math.floor(roundEndTimeLeft);
+    const centiseconds = Math.floor((roundEndTimeLeft * 100) % 100);
+    document.getElementById('round-end-countdown').textContent =
+        `${seconds}.${String(centiseconds).padStart(2, '0')}`;
+
+    if (roundEndTimeLeft <= 0) {
+        clearInterval(roundEndTimer);
+        hornAudio.play().catch(error => console.error('Horn playback failed:', error));
+    }
 }
 
 function stopTimer() {
@@ -72,6 +90,14 @@ function stopTimer() {
     document.getElementById('status').textContent = 'Ready';
     startTime = null;
     countdownAudio.currentTime = 0;
+
+    // Start the 10 second countdown
+    if (roundEndTimer) {
+        clearInterval(roundEndTimer);
+    }
+    roundEndTimeLeft = 10.0;
+    document.getElementById('round-end-countdown').textContent = '10.00';
+    roundEndTimer = setInterval(updateRoundEndTimer, 10); // Update every 10ms for smoother countdown
 }
 
 function updateAttemptsList() {
@@ -88,6 +114,14 @@ function updateAttemptsList() {
 
 function startCountdown() {
     if (isRunning) return;
+
+    // Reset round end timer if it's running
+    if (roundEndTimer) {
+        clearInterval(roundEndTimer);
+        roundEndTimer = null;
+    }
+    roundEndTimeLeft = 10.0;
+    document.getElementById('round-end-countdown').textContent = '10.00';
 
     // Always require first interaction on mobile
     if (isFirstStart || /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
