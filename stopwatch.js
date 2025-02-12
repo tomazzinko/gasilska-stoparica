@@ -16,7 +16,7 @@ countdownAudio.addEventListener('ended', () => {
 });
 
 // Add at the top with other variables
-const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw4GAkct4RODUcammqmTvRcGMglzS8QxZjkA4kZg3gdzgGjYKA8EYU27X7rgZe5kqvH/exec'; // Put your web app URL here
+const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby57PSmffSP6dl2VaKjXUV7VQ5XZ3Y8becfaM2uql5KATUhqvISci2ps9i38UZ28fVe/exec'
 
 // Add these variables at the top with other declarations
 let roundEndTimer = null;
@@ -35,6 +35,13 @@ const State = {
 };
 
 let currentState = State.READY;
+
+// Add at the top with other variables
+const sessionId = new Date().toISOString().split('T')[0] + '_' + Math.random().toString(36).substring(2, 8);
+const sessionStartTime = new Date().toISOString();
+
+// Add at the top with other variables
+const DELETE_TIME_WINDOW = 5 * 60 * 1000; // 5 minutes in milliseconds
 
 function formatTime(ms) {
     const minutes = Math.floor(ms / 60000);
@@ -96,7 +103,7 @@ function stopTimer() {
     // Update attempts display
     updateAttemptsList();
 
-    // Send to Google Sheet with the precise time
+    // Send to Google Sheet with the precise time and session info
     fetch(GOOGLE_SCRIPT_URL, {
         method: 'POST',
         mode: 'no-cors',
@@ -105,7 +112,10 @@ function stopTimer() {
         },
         body: JSON.stringify({
             time: finalTime,
-            formattedTime: formatTime(finalTime)
+            formattedTime: formatTime(finalTime),
+            sessionId: sessionId,
+            sessionStart: sessionStartTime,
+            attemptNumber: attempts.length
         })
     }).catch(error => console.error('Error saving to sheet:', error));
 
@@ -130,14 +140,61 @@ function stopTimer() {
 
 function updateAttemptsList() {
     const attemptsList = document.getElementById('attempts');
+    const now = Date.now();
+
     attemptsList.innerHTML = attempts
-        .map((attempt, index) => `
-            <li>
-                ${formatTime(attempt.time)}
-                <small>(${attempt.timestamp.toLocaleTimeString()})</small>
-            </li>
-        `)
+        .map((attempt, index) => {
+            const timeSinceAttempt = now - attempt.timestamp.getTime();
+            const canDelete = timeSinceAttempt < DELETE_TIME_WINDOW;
+
+            return `
+                <li>
+                    ${formatTime(attempt.time)}
+                    <small>(${attempt.timestamp.toLocaleTimeString()})</small>
+                    ${canDelete ? `
+                        <button onclick="confirmRemoveAttempt(${index})" 
+                            style="margin-left: 10px; padding: 2px 8px; cursor: pointer; 
+                            background: #ff4444; color: white; border: none; border-radius: 3px;">
+                            Izbriši
+                        </button>
+                    ` : ''}
+                </li>
+            `;
+        })
         .join('');
+}
+
+function confirmRemoveAttempt(index) {
+    const attempt = attempts[index];
+    const timeSinceAttempt = Date.now() - attempt.timestamp.getTime();
+
+    if (timeSinceAttempt > DELETE_TIME_WINDOW) {
+        alert('Poskusa ni več mogoče izbrisati (časovna omejitev 5 minut).');
+        return;
+    }
+
+    if (confirm(`Ali res želite izbrisati poskus ${formatTime(attempt.time)}?`)) {
+        // Remove from local array
+        attempts.splice(index, 1);
+
+        // Update display
+        updateAttemptsList();
+
+        // Send delete request to Google Sheet
+        fetch(GOOGLE_SCRIPT_URL, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                action: 'delete',
+                sessionId: sessionId,
+                timestamp: attempt.timestamp.toISOString(),
+                time: attempt.time
+            })
+        }).catch(error => console.error('Error deleting from sheet:', error));
+    }
 }
 
 function adjustDelay(change) {
