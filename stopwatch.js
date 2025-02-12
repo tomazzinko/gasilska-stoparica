@@ -25,6 +25,17 @@ const hornAudio = document.getElementById('horn');
 let startDelay = 10; // Default 3 second delay
 let isCountingDown = false;
 
+// Add at the top with other variables
+const State = {
+    READY: 'ready',           // Initial state, can start countdown
+    WAITING: 'waiting',       // Waiting for delay before audio
+    COUNTDOWN: 'countdown',   // Playing "enota pripravi se"
+    RUNNING: 'running',       // Stopwatch is running
+    FINISHED: 'finished'      // Run completed, 10s countdown active
+};
+
+let currentState = State.READY;
+
 function formatTime(ms) {
     const minutes = Math.floor(ms / 60000);
     const seconds = Math.floor((ms % 60000) / 1000);
@@ -40,12 +51,11 @@ function updateDisplay() {
 }
 
 function startTimer() {
+    currentState = State.RUNNING;
     startTime = Date.now();
     timerInterval = setInterval(updateDisplay, 10);
-    isRunning = true;
-    isCountingDown = false; // Reset countdown flag when timer starts
     document.getElementById('status').textContent = 'Running';
-    document.getElementById('stopwatch').style.color = '#4CAF50'; // Green when running
+    document.getElementById('stopwatch').style.color = '#4CAF50';
 }
 
 function updateRoundEndTimer() {
@@ -62,25 +72,31 @@ function updateRoundEndTimer() {
 }
 
 function stopTimer() {
-    if (!isRunning) return;
+    // Only allow stopping from RUNNING state
+    if (currentState !== State.RUNNING) return;
 
     clearInterval(timerInterval);
-    const finalTime = Date.now() - startTime;
-    isRunning = false;
+    // Get final time before any other operations
+    const endTime = Date.now();
+    const finalTime = endTime - startTime;
 
-    // Reset display color to black
+    // Update display one last time with precise final time
+    document.getElementById('stopwatch').textContent = formatTime(finalTime);
+
+    currentState = State.FINISHED;
     document.getElementById('stopwatch').style.color = '#000000';
+    document.getElementById('status').textContent = 'Gremo v postroj!';
 
-    // Add to attempts
+    // Add to attempts with the precise time
     attempts.unshift({
         time: finalTime,
-        timestamp: new Date()
+        timestamp: new Date(endTime)
     });
 
     // Update attempts display
     updateAttemptsList();
 
-    // Send to Google Sheet
+    // Send to Google Sheet with the precise time
     fetch(GOOGLE_SCRIPT_URL, {
         method: 'POST',
         mode: 'no-cors',
@@ -94,7 +110,6 @@ function stopTimer() {
     }).catch(error => console.error('Error saving to sheet:', error));
 
     // Reset display and audio position
-    document.getElementById('status').textContent = 'Ready';
     startTime = null;
     countdownAudio.currentTime = 0;
 
@@ -104,7 +119,13 @@ function stopTimer() {
     }
     roundEndTimeLeft = 10.0;
     document.getElementById('round-end-countdown').textContent = '10.00';
-    roundEndTimer = setInterval(updateRoundEndTimer, 10); // Update every 10ms for smoother countdown
+    roundEndTimer = setInterval(() => {
+        updateRoundEndTimer();
+        if (roundEndTimeLeft <= 0) {
+            currentState = State.READY;
+            document.getElementById('status').textContent = '-';
+        }
+    }, 10);
 }
 
 function updateAttemptsList() {
@@ -125,7 +146,14 @@ function adjustDelay(change) {
 }
 
 function startCountdown() {
-    if (isRunning || isCountingDown) return; // Don't start if already running or counting down
+    // Only allow starting from READY state
+    if (currentState !== State.READY) {
+        console.log('Ignoring start attempt in state:', currentState);
+        return;
+    }
+
+    // Reset stopwatch display immediately
+    document.getElementById('stopwatch').textContent = '00:00.000';
 
     // Reset round end timer if it's running
     if (roundEndTimer) {
@@ -134,25 +162,21 @@ function startCountdown() {
     }
     roundEndTimeLeft = 10.0;
     document.getElementById('round-end-countdown').textContent = '10.00';
-
-    // Reset stopwatch color to black when starting new run
     document.getElementById('stopwatch').style.color = '#000000';
 
-    // Always require first interaction on mobile
+    // Mobile first interaction handling
     if (isFirstStart || /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
         document.getElementById('status').textContent = 'Klikni tukaj za začetek';
 
         const startOnClick = () => {
             document.removeEventListener('click', startOnClick);
             isFirstStart = false;
-            // Try to unlock audio on mobile
             countdownAudio.play().then(() => {
                 countdownAudio.pause();
                 countdownAudio.currentTime = 0;
-                playCountdownAndStart();
+                startWaitingPhase();
             }).catch(() => {
-                // If play fails, try anyway
-                playCountdownAndStart();
+                startWaitingPhase();
             });
         };
 
@@ -160,61 +184,79 @@ function startCountdown() {
         return;
     }
 
-    // For desktop, try playing directly
-    playCountdownAndStart();
+    startWaitingPhase();
 }
 
-function playCountdownAndStart() {
-    isCountingDown = true;
-    document.getElementById('status').textContent = 'Čakam...';
-    document.getElementById('stopwatch').style.color = '#FFA500'; // Yellow during waiting period
+function startWaitingPhase() {
+    currentState = State.WAITING;
+    document.getElementById('status').textContent = 'Zamik...';
+    document.getElementById('stopwatch').style.color = '#FFA500';
 
-    // First wait for the configured delay
     setTimeout(() => {
-        document.getElementById('status').textContent = 'Pripravi se...';
-        countdownAudio.currentTime = 0;
-
-        const playPromise = countdownAudio.play();
-
-        if (playPromise !== undefined) {
-            playPromise.catch(error => {
-                console.error('Playback failed:', error);
-                // Show clearer message on mobile
-                const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-                document.getElementById('status').textContent = isMobile ?
-                    'Klikni tukaj za začetek' :
-                    'Klikni kjerkoli na strani za začetek/konec ali uporabi tipko presledek';
-                isFirstStart = true; // Reset to try again
-                isCountingDown = false; // Reset countdown flag on error
-            });
+        if (currentState === State.WAITING) { // Verify state hasn't changed
+            startAudioCountdown();
         }
     }, startDelay * 1000);
 }
 
-// Replace the click event listener with this updated version
+function startAudioCountdown() {
+    currentState = State.COUNTDOWN;
+    document.getElementById('status').textContent = 'Pripravi se...';
+    countdownAudio.currentTime = 0;
+
+    const playPromise = countdownAudio.play();
+    if (playPromise !== undefined) {
+        playPromise.catch(error => {
+            console.error('Playback failed:', error);
+            currentState = State.READY; // Reset state on error
+            const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+            document.getElementById('status').textContent = isMobile ?
+                'Klikni tukaj za začetek' :
+                'Klikni kjerkoli na strani za začetek/konec ali uporabi tipko presledek';
+            isFirstStart = true;
+        });
+    }
+}
+
+// Update click handler to be more explicit about states
 document.addEventListener('click', (event) => {
-    // Ignore clicks on buttons, links, and their children
     if (event.target.closest('button') || event.target.closest('a')) {
         return;
     }
 
-    if (isRunning) {
-        stopTimer();
-    } else {
-        startCountdown();
+    switch (currentState) {
+        case State.RUNNING:
+            stopTimer();
+            break;
+        case State.READY:
+            startCountdown();
+            break;
+        case State.FINISHED:
+            console.log('Waiting for siren to finish...');
+            break;
+        default:
+            console.log('Action not allowed in current state:', currentState);
     }
 });
 
+// Update keydown handler to match
 document.addEventListener('keydown', (event) => {
     if (event.code === 'Space') {
-        event.preventDefault(); // Prevent page scroll
-        if (isRunning) {
-            stopTimer();
-        } else {
-            startCountdown();
+        event.preventDefault();
+        switch (currentState) {
+            case State.RUNNING:
+                stopTimer();
+                break;
+            case State.READY:
+                startCountdown();
+                break;
+            case State.FINISHED:
+                console.log('Waiting for siren to finish...');
+                break;
         }
     }
 });
 
 // Initialize
+currentState = State.READY;
 document.getElementById('stopwatch').textContent = '00:00.000'; 
