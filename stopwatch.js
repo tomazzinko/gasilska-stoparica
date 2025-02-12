@@ -43,6 +43,7 @@ function startTimer() {
     timerInterval = setInterval(updateDisplay, 10);
     isRunning = true;
     document.getElementById('status').textContent = 'Running';
+    document.getElementById('stopwatch').style.color = '#4CAF50'; // Green when running
 }
 
 function updateRoundEndTimer() {
@@ -64,6 +65,9 @@ function stopTimer() {
     clearInterval(timerInterval);
     const finalTime = Date.now() - startTime;
     isRunning = false;
+
+    // Reset display color to black
+    document.getElementById('stopwatch').style.color = '#000000';
 
     // Add to attempts
     attempts.unshift({
@@ -129,6 +133,9 @@ function startCountdown() {
     roundEndTimeLeft = 10.0;
     document.getElementById('round-end-countdown').textContent = '10.00';
 
+    // Reset stopwatch color to black when starting new run
+    document.getElementById('stopwatch').style.color = '#000000';
+
     // Always require first interaction on mobile
     if (isFirstStart || /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
         document.getElementById('status').textContent = 'Klikni tukaj za začetek';
@@ -157,6 +164,7 @@ function startCountdown() {
 
 function playCountdownAndStart() {
     document.getElementById('status').textContent = 'Čakam...';
+    document.getElementById('stopwatch').style.color = '#FFA500'; // Yellow during waiting period
 
     // First wait for the configured delay
     setTimeout(() => {
