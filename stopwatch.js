@@ -134,6 +134,8 @@ function stopTimer() {
         if (roundEndTimeLeft <= 0) {
             currentState = State.READY;
             document.getElementById('status').textContent = '-';
+            // Ensure horn audio plays on mobile
+            hornAudio.play().catch(error => console.error('Horn playback failed:', error));
         }
     }, 10);
 }
@@ -316,4 +318,4 @@ document.addEventListener('keydown', (event) => {
 
 // Initialize
 currentState = State.READY;
-document.getElementById('stopwatch').textContent = '00:00.000'; 
+document.getElementById('stopwatch').textContent = '00:00.000';
