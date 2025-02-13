@@ -38,10 +38,20 @@
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
         }
 
+        .startStopButton {
+            padding: 20px 30px;
+            font-size: 30px;
+            cursor: pointer;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            background: white;
+        }
+
         @media (max-width: 900px) {
             .container-wrapper {
                 flex-direction: column;
                 align-items: stretch;
+                width: 100%;
             }
 
             .attempts-container {
@@ -63,6 +73,15 @@
             }
         }
 
+        @media (min-width: 900px) {
+            .controls-hint {
+                position: fixed;
+                bottom: 10px;
+                left: 50%;
+                transform: translateX(-50%);
+            }
+        }
+
         #stopwatch {
             font-size: 120px;
             font-weight: bold;
@@ -78,13 +97,6 @@
             text-align: center;
             margin: 40px 0 30px 0;
             font-family: monospace;
-        }
-
-        .status {
-            text-align: center;
-            font-size: 24px;
-            margin: 20px 0;
-            color: #666;
         }
 
         #attempts {
@@ -130,6 +142,27 @@
             min-width: 20px;
             text-align: center;
         }
+
+        #startStopButton.start {
+            background-color: #4CAF50; /* Green */
+            color: black;
+        }
+
+        #startStopButton.delay {
+            background-color: #FFA500; /* Orange */
+            color: white;
+        }
+
+        #startStopButton.stop {
+            background-color: #FF4444; /* Red */
+            color: white;
+        }
+
+        #startStopButton:disabled {
+            background-color: #ccc;
+            color: #666;
+            cursor: not-allowed;
+        }
     </style>
 </head>
 
@@ -151,8 +184,8 @@
     <div class="container-wrapper">
         <div class="main-container">
             <div id="stopwatch">00:00.000</div>
-            <div class="status" id="status">-</div>
-            <div id="round-end-countdown">10:00</div>
+            <button id="startStopButton" class="startStopButton start" >Začni</button>
+            <div id="round-end-countdown">-</div>
             <div class="delay-controls">
                 Zamik:
                 <button onclick="adjustDelay(-1)">-</button>
@@ -160,16 +193,15 @@
                 <button onclick="adjustDelay(1)">+</button>
             </div>
 
-            <div class="controls-hint">
-                Klikni z miško kjerkoli na strani za začetek/konec ali uporabi tipko presledek
-                <br>
-                <a class="github-link"
-                    href="https://github.com/tomazzinko/gasilska-stoparica">tomazzinko/gasilska-stoparica</a>
-            </div>
+
         </div>
         <div class="attempts-container">
             <h2>Rezultati</h2>
             <ul id="attempts"></ul>
+        </div>
+        <div class="controls-hint">
+            <a class="github-link"
+                href="https://github.com/tomazzinko/gasilska-stoparica">tomazzinko/gasilska-stoparica</a>
         </div>
     </div>
 
@@ -178,6 +210,14 @@
         const scriptElement = document.createElement('script');
         scriptElement.src = `stopwatch.js?v=${Date.now()}`;
         document.body.appendChild(scriptElement);
+
+        document.getElementById('startStopButton').addEventListener('click', () => {
+            if (currentState === State.RUNNING) {
+                stopTimer();
+            } else if (currentState === State.READY) {
+                startCountdown();
+            }
+        });
     </script>
 </body>
 
