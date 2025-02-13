@@ -2,8 +2,8 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Gasilski Časovnik za vadbo</title>
     <style>
         body {
@@ -144,17 +144,20 @@
         }
 
         #startStopButton.start {
-            background-color: #4CAF50; /* Green */
+            background-color: #4CAF50;
+            /* Green */
             color: black;
         }
 
         #startStopButton.delay {
-            background-color: #FFA500; /* Orange */
+            background-color: #FFA500;
+            /* Orange */
             color: white;
         }
 
         #startStopButton.stop {
-            background-color: #FF4444; /* Red */
+            background-color: #FF4444;
+            /* Red */
             color: white;
         }
 
@@ -167,58 +170,53 @@
 </head>
 
 <body>
+    <!-- Audio Elements -->
     <audio id="countdown" preload="auto">
-        <source src="enota_pripravi_se.ogg" type="audio/ogg">
-        <source src="enota_pripravi_se.mp3" type="audio/mpeg">
-        <source src="enota_pripravi_se.m4a" type="audio/mp4">
-        <source src="enota_pripravi_se.wav" type="audio/wav">
+        <source src="enota_pripravi_se.ogg" type="audio/ogg" />
+        <source src="enota_pripravi_se.mp3" type="audio/mpeg" />
+        <source src="enota_pripravi_se.m4a" type="audio/mp4" />
+        <source src="enota_pripravi_se.wav" type="audio/wav" />
         Your browser does not support the audio element.
     </audio>
+
     <audio id="horn" preload="auto">
-        <source src="horn.ogg" type="audio/ogg">
-        <source src="horn.mp3" type="audio/mpeg">
-        <source src="horn.m4a" type="audio/mp4">
-        <source src="horn.wav" type="audio/wav">
+        <source src="horn.ogg" type="audio/ogg" />
+        <source src="horn.mp3" type="audio/mpeg" />
+        <source src="horn.m4a" type="audio/mp4" />
+        <source src="horn.wav" type="audio/wav" />
         Your browser does not support the audio element.
     </audio>
+
+    <!-- Layout -->
     <div class="container-wrapper">
         <div class="main-container">
             <div id="stopwatch">00:00.000</div>
-            <button id="startStopButton" class="startStopButton start" >Začni</button>
+            <button id="startStopButton" class="startStopButton start">Začni</button>
             <div id="round-end-countdown">-</div>
+
+            <!-- Delay Controls -->
             <div class="delay-controls">
                 Zamik:
                 <button onclick="adjustDelay(-1)">-</button>
                 <span id="delayDisplay">10</span>s
                 <button onclick="adjustDelay(1)">+</button>
             </div>
-
-
         </div>
+
         <div class="attempts-container">
             <h2>Rezultati</h2>
             <ul id="attempts"></ul>
         </div>
+
         <div class="controls-hint">
-            <a class="github-link"
-                href="https://github.com/tomazzinko/gasilska-stoparica">tomazzinko/gasilska-stoparica</a>
+            <a class="github-link" href="https://github.com/tomazzinko/gasilska-stoparica">
+                tomazzinko/gasilska-stoparica
+            </a>
         </div>
     </div>
 
-    <script>
-        // Add timestamp to force script reload
-        const scriptElement = document.createElement('script');
-        scriptElement.src = `stopwatch.js?v=${Date.now()}`;
-        document.body.appendChild(scriptElement);
-
-        document.getElementById('startStopButton').addEventListener('click', () => {
-            if (currentState === State.RUNNING) {
-                stopTimer();
-            } else if (currentState === State.READY) {
-                startCountdown();
-            }
-        });
-    </script>
+    <!-- Load JS (add a version param to bust cache if needed) -->
+    <script src="stopwatch.js?v=<?= time() ?>"></script>
 </body>
 
 </html>
