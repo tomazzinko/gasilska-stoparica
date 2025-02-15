@@ -161,6 +161,7 @@ function stopTimer() {
       btn.textContent = 'Začni';
       btn.classList.add('start');
       btn.disabled = false;
+      hornAudio.volume = 1.0;
       hornAudio.play().catch(error => console.error('Horn playback failed:', error));
     }
   }, 10);
@@ -293,8 +294,7 @@ document.addEventListener('keydown', (event) => {
   }
 });
 
-// Main button click
-document.getElementById('startStopButton').addEventListener('click', async () => {
+document.addEventListener('click', async (event) => {
   try {
     // Unlock in same gesture
     await unlockAudio();
@@ -302,10 +302,9 @@ document.getElementById('startStopButton').addEventListener('click', async () =>
     console.warn('Unlock failed or was blocked:', e);
   }
 
-  // Then run your normal logic:
   if (currentState === State.RUNNING) {
     stopTimer();
-  } else if (currentState === State.READY) {
+  } else if (currentState === State.READY && event.target.id === 'startStopButton') {
     startCountdown();
   }
 });
